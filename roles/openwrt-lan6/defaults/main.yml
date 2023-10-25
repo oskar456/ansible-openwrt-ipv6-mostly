@@ -1,0 +1,7 @@
+---
+lan6_name: lan6
+lan6_ports: []
+lan6_ip6assign: 60
+lan6_ip6hint: 60
+lan6_firewallzone: lan
+...

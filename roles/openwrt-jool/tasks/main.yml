@@ -1,0 +1,87 @@
+---
+- name: Install necesarry packages
+  opkg:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kmod-veth
+    - ip-full
+    - kmod-jool-netfilter
+    - jool-tools-netfilter
+
+- name: Deploy jool setup script
+  template:
+    src: setupjool.sh.j2
+    dest: /sbin/setupjool.sh
+    mode: "0755"
+
+- name: Make sure jool setup script runs after boot
+  lineinfile:
+    path: /etc/rc.local
+    line: /sbin/setupjool.sh
+    insertbefore: exit 0
+
+- name: Revert pending changes
+  uci:
+    command: revert
+
+- name: Create Jool network interface
+  uci:
+    command: section
+    config: network
+    type: interface
+    name:: "{{ jool_interface }}"
+    find:
+      device: "{{ jool_interface }}"
+    value:
+      proto: static
+      ip6assign: 64
+      ip6hint: 64
+      ipaddr:
+        - "{{ jool_v4subnet | ansible.utils.ipaddr('1') }}"
+
+- name: Route NAT64 prefix to Jool
+  uci:
+    command: section
+    config: network
+    type: route6
+    find:
+      interface: "{{ jool_interface }}"
+    value:
+      target: "{{ jool_pool6 }}"
+      gateway: fe80::64
+
+- name: Setup RAs for the jool interface
+  uci:
+    command: section
+    config: dhcp
+    type: dhcp
+    name:: "{{ jool_interface }}"
+    find:
+      interface: "{{ jool_interface }}"
+    value:
+      ignore: 1
+      ra: server
+      ra_default: 2
+
+- name: find the firewall zone section
+  uci:
+    command: find
+    config: firewall
+    type: zone
+    find:
+      name: "{{ jool_firewallzone }}"
+  register: fwzone
+
+- name: Add jool interface to firewall zone
+  uci:
+    command: add_list
+    config: firewall
+    section: "{{fwzone.section}}"
+    option: network
+    unique: true
+    value: "{{ jool_interface }}"
+
+- name: Commit pending changes
+  uci:
+    command: commit

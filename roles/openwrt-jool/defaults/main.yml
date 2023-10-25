@@ -1,0 +1,10 @@
+---
+jool_pool6: 64:ff9b::/96
+
+# A subnet used to connect from jool namespace to OpenWRT namespace
+jool_v4subnet: 192.168.164.0/24
+
+jool_namespace: jool
+jool_interface: jool
+jool_firewallzone: lan
+...

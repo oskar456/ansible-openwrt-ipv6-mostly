@@ -1,0 +1,29 @@
+---
+- name: Set up additional IPv6 LAN network
+  hosts: default_host
+  roles:
+    - gekmihesg.openwrt
+    - name: openwrt-lan6
+      lan6_ports:
+        - lan2
+  tasks:
+    - name: find LAN bridge device
+      uci:
+        command: find
+        config: network
+        type: device
+        find:
+          name: br-lan
+      register: lan_device
+
+    - name: remove lan2 from LAN bridge
+      uci:
+        command: del_list
+        config: network
+        section: "{{ lan_device.section }}"
+        option: ports
+        value: lan2
+
+    - name: commit uci changes
+      uci:
+        command: commit

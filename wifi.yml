@@ -1,0 +1,89 @@
+---
+- name: Set up wireless network
+  hosts: default_host
+  roles:
+    - gekmihesg.openwrt
+  tasks:
+    - name: revert UCI changes
+      uci:
+        command: revert
+
+    - name: enable 5GHz radio
+      uci:
+        command: set
+        config: wireless
+        section: radio1
+        value:
+          channel: 44
+          htmode: VHT80
+          disabled: 0
+
+    - name: set up LAN Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio1
+          mode: ap
+          network: lan
+        value:
+          ssid: IPv6-mostly
+          encryption: sae
+          key: tutorial
+
+    - name: set up LAN6 Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio1
+          mode: ap
+          network: lan6
+        value:
+          ssid: IPv6-only
+          encryption: sae
+          key: tutorial
+
+    - name: enable 2.4GHz radio
+      uci:
+        command: set
+        config: wireless
+        section: radio0
+        value:
+          channel: 11
+          htmode: HT40
+          disabled: 0
+
+    - name: set up legacy LAN Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio0
+          mode: ap
+          network: lan
+        value:
+          ssid: IPv6-mostly-2.4
+          encryption: psk2+ccmp
+          key: tutorial
+
+    - name: set up legacy LAN6 Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio0
+          mode: ap
+          network: lan6
+        value:
+          ssid: IPv6-only-2.4
+          encryption: psk+ccmp
+          key: tutorial
+
+#    - name: commit UCI changes
+#      uci:
+#        command: commit

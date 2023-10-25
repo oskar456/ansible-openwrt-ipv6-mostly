@@ -1,0 +1,64 @@
+---
+- name: Revert pending changes
+  uci:
+    command: revert
+
+- name: Create new bridge device
+  uci:
+    command: section
+    config: network
+    type: device
+    find:
+      name: "br-{{ lan6_name }}"
+    value:
+      type: bridge
+      name: "br-{{ lan6_name }}"
+      bridge_empty: 1
+      ports: "{{ lan6_ports }}"
+
+- name: Create new interface
+  uci:
+    command: section
+    config: network
+    type: interface
+    name:: "{{ lan6_name }}"
+    find:
+      device: "br-{{ lan6_name }}"
+    value:
+      proto: static
+      device: "br-{{ lan6_name }}"
+      ip6assign: "{{ lan6_ip6assign }}"
+      ip6hint: "{{ lan6_ip6hint }}"
+
+
+- name: Setup RAs for the new interface
+  uci:
+    command: section
+    config: dhcp
+    type: dhcp
+    name:: "{{ lan6_name }}"
+    find:
+      interface: "{{ lan6_name }}"
+    value:
+      ignore: 1
+      ra: server
+      dhcpv6: server
+
+- name: find the firewall zone section
+  uci:
+    command: find
+    config: firewall
+    type: zone
+    find:
+      name: "{{ lan6_firewallzone }}"
+  register: fwzone
+
+- name: Add interface to firewall zone
+  uci:
+    command: add_list
+    config: firewall
+    section: "{{fwzone.section}}"
+    option: network
+    unique: true
+    value: "{{ lan6_name }}"
+
