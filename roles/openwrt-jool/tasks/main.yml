@@ -9,6 +9,13 @@
     - kmod-jool-netfilter
     - jool-tools-netfilter
 
+- name: Ensure rc.local is executable
+  ansible.builtin.file:
+    path: /etc/rc.local
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Deploy jool setup script
   template:
     src: setupjool.sh.j2
