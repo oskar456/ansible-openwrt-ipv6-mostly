@@ -1,0 +1,3 @@
+roles:
+  - name: gekmihesg.openwrt
+    version: "28c79ff6e68cde246e1283685e5f301eab905e6f"
