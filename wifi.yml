@@ -84,6 +84,6 @@
           encryption: psk+ccmp
           key: tutorial
 
-#    - name: commit UCI changes
-#      uci:
-#        command: commit
+    - name: commit UCI changes
+      uci:
+        command: commit

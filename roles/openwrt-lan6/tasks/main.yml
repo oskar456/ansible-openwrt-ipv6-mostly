@@ -21,7 +21,7 @@
     command: section
     config: network
     type: interface
-    name:: "{{ lan6_name }}"
+    name: "{{ lan6_name }}"
     find:
       device: "br-{{ lan6_name }}"
     value:
@@ -62,3 +62,8 @@
     unique: true
     value: "{{ lan6_name }}"
 
+- name: Commit pending changes
+  tags:
+    - commit
+  uci:
+    command: commit

@@ -1,0 +1,6 @@
+---
+- name: Enable DHCP 108 option
+  hosts: default_host
+  roles:
+    - gekmihesg.openwrt
+    - name: openwrt-dhcp108

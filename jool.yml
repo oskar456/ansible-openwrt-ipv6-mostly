@@ -4,4 +4,4 @@
   roles:
     - gekmihesg.openwrt
     - name: openwrt-jool
-      jool_pool6: "64:ff9b:1::/96"
+      jool_pool6: "64:ff9b:1:fffe::/96"

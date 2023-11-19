@@ -1,0 +1,22 @@
+---
+- name: Revert pending changes
+  uci:
+    command: revert
+
+- name: Setup RA option PREF64
+  with_items: "{{ pref64_interfaces }}"
+  uci:
+    command: section
+    config: dhcp
+    type: dhcp
+    name:: "{{ item }}"
+    find:
+      interface: "{{ item }}"
+    value:
+      ra_pref64: "{{ pref64_value }}"
+
+- name: Commit pending changes
+  tags:
+    - commit
+  uci:
+    command: commit

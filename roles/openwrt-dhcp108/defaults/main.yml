@@ -1,0 +1,6 @@
+---
+# How long should IPv4 stay deactivated in seconds
+dhcp108_value: 1800
+dhcp108_interfaces:
+   - "lan"
+...

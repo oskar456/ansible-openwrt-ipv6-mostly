@@ -25,5 +25,7 @@
         value: lan2
 
     - name: commit uci changes
+      tags:
+        - commit
       uci:
         command: commit

@@ -1,0 +1,5 @@
+---
+pref64_value: "64:ff9b::/96"
+pref64_interfaces:
+   - "lan"
+...

@@ -1,0 +1,10 @@
+---
+- name: Enable PREF64 RA option
+  hosts: default_host
+  roles:
+    - gekmihesg.openwrt
+    - name: openwrt-pref64
+      pref64_value: "64:ff9b:1:fffe::/96"
+      pref64_interfaces:
+        - lan
+        - lan6

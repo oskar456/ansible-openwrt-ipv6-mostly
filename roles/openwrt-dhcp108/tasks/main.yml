@@ -1,0 +1,20 @@
+---
+- name: Revert pending changes
+  uci:
+    command: revert
+
+- name: Setup DHCP Option 108
+  with_items: "{{ dhcp108_interfaces }}"
+  uci:
+    command: add_list
+    config: dhcp
+    section: "{{ item }}"
+    option: "dhcp_option"
+    unique: true
+    value: "{{ '108,{:02x}:{:02x}:{:02x}:{:02x}'.format(dhcp108_value//(256*256*256), dhcp108_value//(256*256), dhcp108_value//256, dhcp108_value%256) }}"
+
+- name: Commit pending changes
+  tags:
+    - commit
+  uci:
+    command: commit
