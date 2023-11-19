@@ -1,0 +1,58 @@
+---
+- name: Install unbound-daemon
+  opkg:
+    name: unbound-daemon
+    state: present
+  tags:
+    - install
+
+- name: Revert pending changes
+  uci:
+    command: revert
+
+- name: Move dnsmasq to port 1053
+  uci:
+    command: set
+    config: dhcp
+    section: "@dnsmasq[0]"
+    value:
+      port: 1053
+      noresolv: true
+
+- name: Make sure DNS is offered in DHCP
+  with_items: "{{ unbound_interfaces }}"
+  uci:
+    command: add_list
+    config: dhcp
+    section: "{{ item }}"
+    option: "dhcp_option"
+    unique: true
+    value: "option:dns-server,0.0.0.0"
+
+- name: Set up Unbound
+  uci:
+    command: set
+    config: unbound
+    section: "@unbound[0]"
+    value:
+      dhcp_link: dnsmasq
+      dns64: "{{ unbound_dns64 }}"
+      dns64_prefix: "{{ unbound_dns64_prefix }}"
+      validator: "{{ unbound_validator }}"
+
+
+- name: Set up LAN interfaces for Unbound
+  with_items: "{{ unbound_interfaces }}"
+  uci:
+    command: add_list
+    config: unbound
+    section: "@unbound[0]"
+    option: "iface_lan"
+    unique: true
+    value: "{{ item }}"
+
+- name: Commit pending changes
+  tags:
+    - commit
+  uci:
+    command: commit

@@ -9,7 +9,7 @@
     command: section
     config: dhcp
     type: dhcp
-    name:: "{{ item }}"
+    name: "{{ item }}"
     find:
       interface: "{{ item }}"
     value:

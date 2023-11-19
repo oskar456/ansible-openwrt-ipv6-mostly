@@ -36,7 +36,7 @@
     command: section
     config: dhcp
     type: dhcp
-    name:: "{{ lan6_name }}"
+    name: "{{ lan6_name }}"
     find:
       interface: "{{ lan6_name }}"
     value:

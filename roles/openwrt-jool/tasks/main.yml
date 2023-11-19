@@ -8,6 +8,8 @@
     - ip-full
     - kmod-jool-netfilter
     - jool-tools-netfilter
+  tags:
+    - install
 
 - name: Ensure rc.local is executable
   ansible.builtin.file:

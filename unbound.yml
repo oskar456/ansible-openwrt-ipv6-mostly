@@ -1,0 +1,13 @@
+---
+- name: Use Unbound as DNS resolver
+  hosts: default_host
+  roles:
+    - gekmihesg.openwrt
+    - name: openwrt-unbound
+      unbound_dns64: true
+      unbound_dns64_prefix: "64:ff9b:1:fffe::/96"
+      unbound_interfaces:
+        - lan
+        - lan6
+      unbound_validator: true
+
