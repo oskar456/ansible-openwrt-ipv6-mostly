@@ -31,7 +31,8 @@ Bootstrapping the router
 ------------------------
 
 Run a clean installation of OpenWRT. Setup upstream connectivity if necessary.
-Install `openssh-sftp-server` package.
+Install `openssh-sftp-server` package. This can be also done with
+`bootstrap.yml` playbook (see below). Don't forget to set `root` password before exposing the router.
 
 How to run the playbooks
 ------------------------
@@ -47,6 +48,8 @@ ansible-galaxy install -r requirements.yml -f
 Now run the applicable playbooks for your router, for example:
 
 ```
-ansible-playbook -i inventory.ini --limit openwrt lan6.yml jool.yml pref64.yml
-dhcp108.yml unbound.yml
+ansible-playbook -i inventory.ini --limit openwrt bootstrap.yml lan6.yml wifi.yml jool.yml pref64.yml dhcp108.yml unbound.yml
 ```
+
+Reboot the router. If everything went well it should start with all services
+properly running.
