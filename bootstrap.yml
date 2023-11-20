@@ -1,6 +1,7 @@
 ---
 - name: Bootstrap fresh OpenWRT router
   hosts: default_host
+  gather_facts: false
   tasks:
     - name: Opkg update
       ansible.builtin.raw: opkg update
