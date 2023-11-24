@@ -5,15 +5,18 @@ This repository holds a collection of roles used to provision a OpenWRT device
 with NAT64, PREF64 and DNS64 in order to run IPv6-mostly or IPv6-only network
 behind such router.
 
+For detailed explanation on how IPv6-mostly and IPv6-only networks work and how
+they are set up on OpenWRT, have a look at [RIPE 87
+tutorial](https://ripe87.ripe.net/programme/meeting-plan/tutorials/).
+
 It has been developed using [GL.iNet
 AC1300](https://openwrt.org/toh/gl.inet/gl-a1300) running [OpenWRT
 23.05.2](https://openwrt.org/releases/23.05/notes-23.05.2). Some adjustments
 might be necessary for other devices and/or OpenWRT versions.
 
 Please note that the roles are only adjusting the configuration. Services are
-not restarted services in order to avoid unexpected disruptions. A complete
-reboot is recommended after provisioning in order to make sure everything
-starts properly.
+not restarted in order to avoid unexpected disruptions. A complete reboot is
+recommended after provisioning in order to make sure everything starts properly
 
 Available roles
 ---------------
