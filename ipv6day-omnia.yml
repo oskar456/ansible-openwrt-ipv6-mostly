@@ -1,0 +1,289 @@
+---
+
+# Set up IPv6-mostly network for the IPv6-day
+# Prerequisites:
+# - set up IPv4 and IPv6 connectivity
+# - make sure hbs branch is selected
+# - set up SSH key authentication
+
+- name: Set up additional IPv6 LAN network
+  hosts: ipv6day-omnia
+  tags:
+    - lan6
+  roles:
+    - gekmihesg.openwrt
+    - name: openwrt-lan6
+      lan6_ports:
+        - lan0
+        - lan1
+    - name: openwrt-jool
+      jool_pool6: "64:ff9b::/96"
+  tasks:
+    - name: find LAN bridge device
+      uci:
+        command: find
+        config: network
+        type: device
+        find:
+          name: br-lan
+      register: lan_device
+
+    - name: remove lan0 and lan1 from LAN bridge
+      uci:
+        command: del_list
+        config: network
+        section: "{{ lan_device.section }}"
+        option: ports
+        value: "{{ item }}"
+      loop:
+        - lan0
+        - lan1
+
+    - name: commit uci changes
+      tags:
+        - commit
+      uci:
+        command: commit
+
+- name: Enable PREF64 RA option and DHCP 108
+  hosts: ipv6day-omnia
+  tags:
+     - config
+  roles:
+    - gekmihesg.openwrt
+    - name: openwrt-dhcp108
+    - name: openwrt-pref64
+      pref64_value: "64:ff9b::/96"
+      pref64_interfaces:
+        - lan
+        - lan6
+
+- name: Set up wireless network
+  hosts: ipv6day-omnia
+  roles:
+    - gekmihesg.openwrt
+  tags:
+     - wifi
+  tasks:
+    - name: revert UCI changes
+      uci:
+        command: revert
+
+    - name: enable 5GHz radio
+      uci:
+        command: set
+        config: wireless
+        section: radio0
+        value:
+          channel: 48
+          htmode: HE160
+          disabled: 0
+
+    - name: set up LAN Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio0
+          mode: ap
+          network: lan
+        value:
+          ssid: Den-IPv6
+          encryption: sae-mixed
+          key: Den-IPv6
+
+    - name: set up LAN6 Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio0
+          mode: ap
+          network: lan6
+        value:
+          ssid: Den-IPv6-v6only
+          encryption: sae-mixed
+          key: Den-IPv6
+
+    - name: enable 2.4GHz radio
+      uci:
+        command: set
+        config: wireless
+        section: radio1
+        value:
+          channel: 11
+          htmode: HT40
+          disabled: 0
+
+    - name: set up legacy LAN Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio1
+          mode: ap
+          network: lan
+        value:
+          ssid: Den-IPv6-2.4-24
+          encryption: psk2+ccmp
+          key: Den-IPv6
+
+    - name: commit UCI changes
+      uci:
+        command: commit
+
+- name: Set up DNS64
+  hosts: ipv6day-omnia
+  tags:
+    - dns64
+  roles:
+    - gekmihesg.openwrt
+  tasks:
+    - name: drop DNS64 config file
+      copy:
+        dest: /etc/kresd/dns64.conf
+        content: |
+          modules = { 'dns64' }
+          trust_anchors.set_insecure({ 'b.9.f.f.4.6.0.0.ip6.arpa', })
+
+    - name: revert UCI changes
+      uci:
+        command: revert
+    - name: enable DNS64
+      uci:
+        command: set
+        config: resolver
+        section: kresd
+        value:
+          include_config: "/etc/kresd/dns64.conf"
+    - name: commit UCI changes
+      uci:
+        command: commit
+
+- name: Set up LEDs
+  hosts: ipv6day-omnia
+  tags:
+    - leds
+  roles:
+    - gekmihesg.openwrt
+  tasks:
+    - name: revert UCI changes
+      uci:
+        command: revert
+    - name: set power LED
+      uci:
+        command: section
+        config: rainbow
+        type: led
+        name: power
+        value:
+          color: FF1100
+    - name: set PCI2 LED
+      uci:
+        command: section
+        config: rainbow
+        type: led
+        name: wlan_2
+        value:
+          color: 66FF00
+    - name: set PCI3 LED
+      uci:
+        command: section
+        config: rainbow
+        type: led
+        name: wlan_3
+        value:
+          color: FF6600
+    - name: set NAT64 LED
+      uci:
+        command: section
+        config: rainbow
+        type: led
+        name: indicator_1
+        value:
+          color: white
+    - name: set Wireguard LED
+      uci:
+        command: section
+        config: rainbow
+        type: led
+        name: indicator_2
+        value:
+          color: red
+    - name: set LAN4 LED
+      uci:
+        command: section
+        config: rainbow
+        type: led
+        name: lan_4
+        value:
+          color: blue
+    - name: set wlan0 trigger
+      uci:
+        command: section
+        config: system
+        type: led
+        name: led_pci2
+        find:
+          name: pci2
+        value:
+          sysfs: "rgb:wlan-2"
+          trigger: netdev
+          mode: link tx rx
+          dev: wlan0
+    - name: set wlan1 trigger
+      uci:
+        command: section
+        config: system
+        type: led
+        name: led_pci3
+        find:
+          name: pci3
+        value:
+          sysfs: "rgb:wlan-3"
+          trigger: netdev
+          mode: link tx rx
+          dev: wlan1
+    - name: set power trigger
+      uci:
+        command: section
+        config: system
+        type: led
+        name: led_power
+        find:
+          name: power
+        value:
+          sysfs: "rgb:power"
+          trigger: heartbeat
+    - name: set Jool trigger
+      uci:
+        command: section
+        config: system
+        type: led
+        name: led_user1
+        find:
+          name: user1
+        value:
+          sysfs: "rgb:indicator-1"
+          trigger: netdev
+          mode: link tx rx
+          dev: jool
+    - name: set WG trigger
+      uci:
+        command: section
+        config: system
+        type: led
+        name: led_user2
+        find:
+          name: user2
+        value:
+          sysfs: "rgb:indicator-2"
+          trigger: netdev
+          mode: link tx rx
+          dev: wgipv6tun
+    - name: commit UCI changes
+      uci:
+        command: commit
