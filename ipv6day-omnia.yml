@@ -127,7 +127,7 @@
           mode: ap
           network: lan
         value:
-          ssid: Den-IPv6-2.4-24
+          ssid: Den-IPv6-2.4-25
           encryption: psk2+ccmp
           key: Den-IPv6
 
@@ -284,6 +284,13 @@
           trigger: netdev
           mode: link tx rx
           dev: wgipv6tun
+    - name: enable WAN SSH
+      uci:
+        command: set
+        config: firewall
+        section: wan_ssh_turris_rule
+        value:
+          enabled: 1
     - name: commit UCI changes
       uci:
         command: commit
