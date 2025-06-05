@@ -8,6 +8,7 @@
     command: section
     config: network
     type: device
+    name: "br_{{ lan6_name }}"
     find:
       name: "br-{{ lan6_name }}"
     value:
