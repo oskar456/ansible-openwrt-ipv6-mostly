@@ -73,10 +73,10 @@
       uci:
         command: set
         config: wireless
-        section: radio0
+        section: radio1
         value:
           channel: 48
-          htmode: HE160
+          htmode: EHT160
           disabled: 0
 
     - name: set up LAN Wi-Fi
@@ -85,7 +85,7 @@
         config: wireless
         type: wifi-iface
         find:
-          device: radio0
+          device: radio1
           mode: ap
           network: lan
         value:
@@ -99,7 +99,7 @@
         config: wireless
         type: wifi-iface
         find:
-          device: radio0
+          device: radio1
           mode: ap
           network: lan6
         value:
@@ -107,14 +107,54 @@
           encryption: sae-mixed
           key: Den-IPv6
 
+    - name: enable 6GHz radio
+      uci:
+        command: set
+        config: wireless
+        section: radio2
+        value:
+          channel: auto
+          htmode: EHT320
+          disabled: 0
+
+    - name: set up LAN Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio2
+          mode: ap
+          network: lan
+        value:
+          ssid: Den-IPv6
+          encryption: sae
+          key: Den-IPv6
+          ieee80211w: 2
+
+    - name: set up LAN6 Wi-Fi
+      uci:
+        command: section
+        config: wireless
+        type: wifi-iface
+        find:
+          device: radio2
+          mode: ap
+          network: lan6
+        value:
+          ssid: Den-IPv6-v6only
+          encryption: sae
+          key: Den-IPv6
+          ieee80211w: 2
+
     - name: enable 2.4GHz radio
       uci:
         command: set
         config: wireless
-        section: radio1
+        section: radio0
         value:
           channel: 11
-          htmode: HT40
+          htmode: HE40
           disabled: 0
 
     - name: set up legacy LAN Wi-Fi
@@ -123,7 +163,7 @@
         config: wireless
         type: wifi-iface
         find:
-          device: radio1
+          device: radio0
           mode: ap
           network: lan
         value:
@@ -163,130 +203,3 @@
       uci:
         command: commit
 
-- name: Set up LEDs
-  hosts: ipv6day-omnia
-  tags:
-    - leds
-  roles:
-    - gekmihesg.openwrt
-  tasks:
-    - name: revert UCI changes
-      uci:
-        command: revert
-    - name: set power LED
-      uci:
-        command: section
-        config: rainbow
-        type: led
-        name: power
-        value:
-          color: FF1100
-    - name: set PCI2 LED
-      uci:
-        command: section
-        config: rainbow
-        type: led
-        name: wlan_2
-        value:
-          color: 66FF00
-    - name: set PCI3 LED
-      uci:
-        command: section
-        config: rainbow
-        type: led
-        name: wlan_3
-        value:
-          color: FF6600
-    - name: set NAT64 LED
-      uci:
-        command: section
-        config: rainbow
-        type: led
-        name: indicator_1
-        value:
-          color: white
-    - name: set Wireguard LED
-      uci:
-        command: section
-        config: rainbow
-        type: led
-        name: indicator_2
-        value:
-          color: red
-    - name: set LAN4 LED
-      uci:
-        command: section
-        config: rainbow
-        type: led
-        name: lan_4
-        value:
-          color: blue
-    - name: set wlan0 trigger
-      uci:
-        command: section
-        config: system
-        type: led
-        name: led_pci2
-        find:
-          name: pci2
-        value:
-          sysfs: "rgb:wlan-2"
-          trigger: phy0tpt
-    - name: set wlan1 trigger
-      uci:
-        command: section
-        config: system
-        type: led
-        name: led_pci3
-        find:
-          name: pci3
-        value:
-          sysfs: "rgb:wlan-3"
-          trigger: phy1tpt
-    - name: set power trigger
-      uci:
-        command: section
-        config: system
-        type: led
-        name: led_power
-        find:
-          name: power
-        value:
-          sysfs: "rgb:power"
-          trigger: heartbeat
-    - name: set Jool trigger
-      uci:
-        command: section
-        config: system
-        type: led
-        name: led_user1
-        find:
-          name: user1
-        value:
-          sysfs: "rgb:indicator-1"
-          trigger: netdev
-          mode: link tx rx
-          dev: jool
-    - name: set WG trigger
-      uci:
-        command: section
-        config: system
-        type: led
-        name: led_user2
-        find:
-          name: user2
-        value:
-          sysfs: "rgb:indicator-2"
-          trigger: netdev
-          mode: link tx rx
-          dev: wgipv6tun
-    - name: enable WAN SSH
-      uci:
-        command: set
-        config: firewall
-        section: wan_ssh_turris_rule
-        value:
-          enabled: 1
-    - name: commit UCI changes
-      uci:
-        command: commit
