@@ -14,8 +14,7 @@
     - gekmihesg.openwrt
     - name: openwrt-lan6
       lan6_ports:
-        - lan0
-        - lan1
+        - eth3
     - name: openwrt-jool
       jool_pool6: "64:ff9b::/96"
   tasks:
@@ -28,7 +27,7 @@
           name: br-lan
       register: lan_device
 
-    - name: remove lan0 and lan1 from LAN bridge
+    - name: remove eth3 from LAN bridge
       uci:
         command: del_list
         config: network
@@ -36,8 +35,7 @@
         option: ports
         value: "{{ item }}"
       loop:
-        - lan0
-        - lan1
+        - eth3
 
     - name: commit uci changes
       tags:
@@ -192,6 +190,7 @@
     - name: revert UCI changes
       uci:
         command: revert
+
     - name: enable DNS64
       uci:
         command: set
@@ -199,7 +198,17 @@
         section: kresd
         value:
           include_config: "/etc/kresd/dns64.conf"
+
+    - name: Allow WAN SSH
+      tags:
+       - firewall
+      uci:
+        command: set
+        config: firewall
+        section: wan_ssh_turris_rule
+        value:
+          enabled: 1
+
     - name: commit UCI changes
       uci:
         command: commit
-
