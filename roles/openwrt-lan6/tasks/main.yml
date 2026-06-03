@@ -30,6 +30,7 @@
       device: "br-{{ lan6_name }}"
       ip6assign: "{{ lan6_ip6assign }}"
       ip6hint: "{{ lan6_ip6hint }}"
+      ip6addr: fe80::1
 
 
 - name: Setup RAs for the new interface
